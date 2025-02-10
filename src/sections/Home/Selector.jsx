@@ -8,21 +8,24 @@ function Selector() {
   const navigate = useNavigate(); 
 
 
-  const themes = ["Select", "Wedding","Night party","Birthday party","Buddhist","Christian","Funeral","Luxury","Farewell","Christmas"];
-  const genres = ["Select", "All", "Pop", "Jazz", "EDM", "Lo-Fi", "Classical", "Rock"];
-  const moods = ["Select", "All", "Fun", "Romantic", "Relax", "Uplifting", "Sad"];
-  const languages = ["Select", "English", "Thai", "Japanese", "Korean"];
+  const themes = ["Select","Wedding","Night party","Birthday party","Buddhist","Christian","Funeral","Luxury","Graduation party","Christmas party","Chinese New Year","Halloween party"];
+  const genres = ["Select","Pop", "Jazz", "EDM", "Lo-Fi", "Classical", "Rock","Romantic", "Retro", "Hip-Hop", "ลูกทุ่ง", "ลูกกรุง", "เพื่อชีวิต", "Indie","Country", "Alternative", "Rap", "R&B", "Chanson", "Opera", "Tango","Bolero", "Swing", "Bossa Nova", "Soul", "Worship", "Hymn", "Carol","Disco", "Traditional", "Soundtrack", "Metal"];
+  const moods = ["Select","Fun", "Romantic", "Relax", "Uplifting", "Sad","Dance", "Celebratory", "Elegant", "Nostalgic", "Spooky", "Worshipful"];
+  const languages = ["Select","English", "Thai", "Spanish", "French", "German", "Japanese", "Chinese", "Korean", "Instrumental", "ETC."];
+
 
   const [data, setData] = useState([]);
-  const [filters, setFilters] = useState({
-    artist: "",
-    songName: "",
-    language: "",
-    themes: "",
-    genres: "",
-    minDuration: "",
-  });
-  const [selectedMood, setSelectedMood] = useState("");
+const [filters, setFilters] = useState({
+  artist: "",
+  songName: "",
+  language: "",
+  themes: [],
+  genres: [],
+  mood: [],
+  minDuration: "",
+});
+
+
   const [playlists, setPlaylists] = useState([]);
   const [message, setMessage] = useState(""); // ข้อความแจ้งเตือน
 
@@ -30,7 +33,7 @@ function Selector() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`${import.meta.env.BASE_URL}DataBase/songV2.csv`);
+        const response = await fetch(`${import.meta.env.BASE_URL}DataBase/songรวมเพลง.csv`);
         if (!response.ok) throw new Error("Failed to fetch CSV file");
 
         const reader = response.body.getReader();
@@ -47,13 +50,21 @@ function Selector() {
               artist: song["ชื่อนักร้อง"] !== "-" ? song["ชื่อนักร้อง"] : song["ชื่อวง"],
               duration: song["นาที"] ? parseDuration(song["นาที"]) : 0,
               url: song["ลิ้ง url"] || "#",
-              genre: song["ประเภทเพลง"] ? song["ประเภทเพลง"].split(",").map(g => g.trim()) : [],
-              theme: song["ธีมงาน"] ? song["ธีมงาน"].split(",").map(t => t.trim()) : [],
+              genre: song["ประเภทเพลง"] 
+                ? song["ประเภทเพลง"].split(",").map(g => g.trim()).filter(g => g !== "") 
+                : [],
+              theme: song["ธีมงาน"] 
+                ? song["ธีมงาน"].split(",").map(t => t.trim()).filter(t => t !== "") 
+                : [],
+                mood: song["Mood"] && song["Mood"] !== "-" 
+                ? song["Mood"].split(",").map(m => m.trim()).filter(m => m !== "") 
+                : [],
               language: song["ภาษา"] || "Unknown",
             }));
             setData(modifiedSongs);
           },
         });
+        
       } catch (error) {
         console.error("Error loading CSV:", error);
       }
@@ -80,44 +91,69 @@ function Selector() {
     }
   };
 
-  const parseDuration = (durationStr) => {
-    console.log("Raw duration string:", durationStr); // Add this line to log the raw duration string
-    if (!durationStr || typeof durationStr !== "string") {
+
+  const calculateTotalDuration = (songs) => {
+    let totalSeconds = songs.reduce((acc, song) => acc + (song.duration || 0), 0);
+    
+    let hours = Math.floor(totalSeconds / 3600);
+    let minutes = Math.floor((totalSeconds % 3600) / 60);
+    let seconds = totalSeconds % 60;
+
+    console.log("Total Playlist Duration (seconds):", totalSeconds);
+    
+    return {
+        hours: String(hours).padStart(2, '0'),
+        minutes: String(minutes).padStart(2, '0'),
+        seconds: String(seconds).padStart(2, '0')
+    };
+};
+
+  
+const parseDuration = (durationStr) => {
+  console.log("Raw duration string:", durationStr); // Debugging log
+
+  if (!durationStr || typeof durationStr !== "string" || durationStr.trim() === "" || durationStr.includes("--")) {
       console.warn("Invalid or missing duration:", durationStr);
       return 0;
-    }
-  
-    const parts = durationStr.split(":").map(Number);
-  
-    let seconds = 0;
-    if (parts.length === 2) { // นาทีและวินาที
-      seconds = parts[0] * 60 + parts[1];
-    } else if (parts.length === 3) { // ชั่วโมง นาที และวินาที
+  }
+
+  const parts = durationStr.split(":").map(num => {
+      const parsed = parseInt(num, 10);
+      return isNaN(parsed) ? 0 : parsed;
+  });
+
+  let seconds = 0;
+  if (parts.length === 3) { // ชั่วโมง:นาที:วินาที
       seconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
-    } else if (parts.length === 1) { // วินาทีเท่านั้น
+  } else if (parts.length === 2) { // นาที:วินาที
+      seconds = parts[0] * 60 + parts[1];
+  } else if (parts.length === 1) { // วินาทีเท่านั้น
       seconds = parts[0];
-    } else {
-      console.warn("Invalid duration format:", durationStr);
-      return 0;
-    }
-  
-    console.log("Parsed duration:", seconds); // เก็บไว้สำหรับตรวจสอบ
-    return seconds;
-  };
+  }
+
+  console.log("Parsed duration (seconds):", seconds);
+  return seconds;
+};
+
+
   
 
-  const filteredData = data.filter((song) => {
-    const searchTerm = filters.searchTerm?.toLowerCase() || "";
-    return (
+const filteredData = data.filter((song) => {
+  const searchTerm = filters.searchTerm?.toLowerCase() || "";
+
+  return (
       (searchTerm === "" ||
-        song.songName.toLowerCase().includes(searchTerm) ||
-        song.artist.toLowerCase().includes(searchTerm)) &&
-      (filters.language === "" || song.language.includes(filters.language)) &&
-      ( !filters.themes || filters.themes.length === 0 || filters.themes.some((theme) => song.theme.includes(theme))) && 
-      (!filters.genres || filters.genres.length === 0 || filters.genres.some((genre) => song.genre.includes(genre)))  &&  
+          song.songName.toLowerCase().includes(searchTerm) ||
+          song.artist.toLowerCase().includes(searchTerm)) &&
+      (filters.language === "" || song.language === filters.language) &&
+      (filters.themes.length === 0 || filters.themes.every((theme) => song.theme.includes(theme))) &&
+      (filters.genres.length === 0 || filters.genres.every((genre) => song.genre.includes(genre))) &&
+      (filters.mood.length === 0 || filters.mood.every((mood) => song.mood.includes(mood))) &&
       (filters.minDuration === "" || song.duration >= parseInt(filters.minDuration))
-    );
+  );
 });
+
+
 
 
   const shuffleArray = (array) => {
@@ -131,7 +167,7 @@ function Selector() {
     return shuffled;
   };
 
-  const createPlaylists = () => {
+  const createPlaylists2 = () => {
     setMessage(""); 
     if (filteredData.length === 0) {
       setMessage("ไม่สามารถสร้างเพลย์ลิสต์ที่ตรงตามเงื่อนไขได้");
@@ -204,14 +240,11 @@ function Selector() {
             
               <div className="relative">
                 <label className="block mb-2 text-black font-semibold text-2xl">Theme</label>
-                <select 
-                  className="w-full p-4 border rounded-md text-black text-lg" 
-                  value={filters.themes}
-                  onChange={(e) => setFilters({ ...filters, themes: [e.target.value] })} >
-                  {themes.map((theme, index) => (
-                    <option key={index} value={theme}>{theme}</option>
-                  ))}
-                </select>
+                <select className="w-full p-4 border rounded-md text-black text-lg" value={filters.themes[0] || ""} 
+                        onChange={(e) => setFilters({ ...filters, themes: e.target.value ? [e.target.value] : [] })} >
+                {themes.map((theme, index) => (     <option key={index} value={theme}>{theme}</option>
+                           ))}
+              </select>
               </div>
             
 
@@ -222,7 +255,7 @@ function Selector() {
                 <select 
                   className="w-full p-4 border rounded-md text-black text-lg" 
                   value={filters.genres}
-                  onChange={(e) => setFilters({ ...filters, genres: [e.target.value] }) } >
+                  onChange={(e) => setFilters({ ...filters, genres: e.target.value ? [e.target.value] : [] })}>
                   {genres.map((genre, index) => (
                     <option key={index} value={genre}>{genre}</option>
                   ))}
@@ -231,18 +264,18 @@ function Selector() {
             
 
             {/* Mood */}
-            <div className="relative">
-              <label className="block mb-2 text-black font-semibold text-2xl">Mood</label>
-              <select 
-                className="w-full p-4 border rounded-md text-black text-lg" 
-                value={selectedMood} 
-                onChange={(e) => setSelectedMood(e.target.value)}
-              >
-                {moods.map((mood, index) => (
-                  <option key={index} value={mood}>{mood}</option>
-                ))}
-              </select>
-            </div>
+              <div className="relative">
+                <label className="block mb-2 text-black font-semibold text-2xl">Mood</label>
+                <select 
+                  className="w-full p-4 border rounded-md text-black text-lg" 
+                  value={filters.mood[0] || ""} 
+                  onChange={(e) => setFilters({ ...filters, mood: e.target.value ? [e.target.value] : [] })}>
+                  {moods.map((mood, index) => (
+                    <option key={index} value={mood}>{mood}</option>
+                  ))}
+                </select>
+              </div>
+
 
             {/* Language */}
             <div className="relative">
@@ -257,7 +290,7 @@ function Selector() {
             {/* Name of Artist */}
             <div className="col-span-2 relative">
               <label className="block mb-2 text-black font-semibold text-2xl">Name of Artist</label>
-              <input type="text" className="w-full p-4 border rounded-md text-black text-lg" placeholder="Name of Artist" value={filters.searchTerm || ""} onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })} />
+              <input type="text" className="w-full p-4 border rounded-md text-black text-lg" placeholder="Name of Artist" value={filters.searchTerm || ""} onChange={(e) => setFilters({ ...  filters, searchTerm: e.target.value })} />
             </div>
 
             {/* ปุ่ม */}
@@ -266,12 +299,12 @@ function Selector() {
                 Cancel
               </button>
               <button 
-                href = {<Playlist/>}
-                className="bg-[#8F4A56] text-white text-lg py-3 px-6 rounded-md " 
-                onClick={() => { createPlaylists();  }}
-              >
-                Done
-              </button>
+                className="bg-[#8F4A56] text-white text-lg py-3 px-6 rounded-md"
+                onClick={() => { createPlaylists2(); navigate("/playlist"); }}
+                >
+                  Done
+                </button>
+
             </div>
           </div>
                 

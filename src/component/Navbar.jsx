@@ -14,7 +14,7 @@ const Navbar = () => {
       <div className="absolute left-1/2 transform -translate-x-1/2 mt-4 flex space-x-6 text-xl">
       <NavItem onClick={() => navigate("/")} icon={<FaHome />} label="Home" />
         <NavItem onClick={() => navigate("/playlist")} icon={<FaMusic />} label="Playlist" />
-        <NavItem  icon={<FaHeart />} label="Favorite" />
+        <NavItem onClick={() => navigate("/Favorite")} icon={<FaHeart />} label="Favorite" />
       </div>
 
       <FaUserCircle className="text-3xl" />
