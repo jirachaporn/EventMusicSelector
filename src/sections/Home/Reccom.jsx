@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Papa from "papaparse";
 import Modal from "react-modal";
-import { FaTimes } from "react-icons/fa"; 
+import { FaTimes } from "react-icons/fa";
 
 Modal.setAppElement("#root");
 
@@ -22,7 +22,7 @@ const themeImages = {
 const formatDuration = (durationInSeconds) => {
   const minutes = Math.floor(durationInSeconds / 60);
   const seconds = durationInSeconds % 60;
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`; 
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
 const parseDuration = (durationStr) => {
@@ -42,13 +42,11 @@ const parseDuration = (durationStr) => {
   return seconds;
 };
 
-
 const SongGrid = ({ songs }) => (
   <div className="grid grid-cols-1 gap-4 mt-5">
     {songs.map((song, idx) => (
-      <div key={idx} className="p-4 bg-gray-100 rounded-lg shadow-md flex items-center">
-        {/* YouTube Embed */}
-        <div className="w-1/2">
+      <div key={idx} className="p-4 bg-gray-100 rounded-lg shadow-md flex flex-col lg:flex-row items-center lg:items-start">
+        <div className="w-full lg:w-1/2">
           <iframe
             width="100%"
             height="200"
@@ -60,21 +58,17 @@ const SongGrid = ({ songs }) => (
           ></iframe>
         </div>
 
-        {/* Song Info */}
-        <div className="w-1/2 pl-4 flex flex-col justify-between">
+        <div className="w-full lg:w-1/2 pl-0 lg:pl-4 mt-4 lg:mt-0 flex flex-col justify-between">
           <div className="text-lg font-semibold text-gray-800 flex justify-between items-center">
             <strong>{song.songName}</strong>
             <span className="text-sm text-gray-600">{formatDuration(song.duration)}</span>
           </div>
-          <div className="text-sm text-gray-500">
-            {song.artist}
-          </div>
+          <div className="text-sm text-gray-500">{song.artist}</div>
 
-          {/* Song URL */}
           {song.url && song.url !== "#" && (
             <iframe
               src={song.url}
-              className="rounded-md h-fit w-fit p-3"
+              className="rounded-md w-full mt-3"
               allow="autoplay"
               title="Song Player"
             ></iframe>
@@ -84,7 +78,6 @@ const SongGrid = ({ songs }) => (
     ))}
   </div>
 );
-
 
 const ThemeCard = ({ theme, image, onClick }) => (
   <div
@@ -107,7 +100,7 @@ function Reccom() {
   const [groupedByTheme, setGroupedByTheme] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState(null);
-  const [error, setError] = useState(null); 
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -135,7 +128,8 @@ function Reccom() {
                 ? song["ธีมงาน"].split(",").map(t => t.trim()).filter(t => t !== "")
                 : [],
               language: song["ภาษา"] || "Unknown",
-              youtubeId: song["ลิ้ง url"] || "", 
+              youtubeId: song["ลิ้ง url"] || "",
+              url: song["song url"] || "", // in case there's another audio source
             }));
 
             setSongs(modifiedSongs);
@@ -181,18 +175,18 @@ function Reccom() {
   const totalDuration = randomSongs.reduce((acc, song) => acc + song.duration, 0);
 
   return (
-    <div className="bg-[#F7D7D1] p-8">
-      <h1 className="text-black text-3xl font-bold mb-5">Recommended</h1>
+    <div className="bg-[#F7D7D1] p-4 sm:p-6 md:p-8">
+      <h1 className="text-black text-2xl sm:text-3xl font-bold mb-5">Recommended</h1>
 
       {error && <div className="text-red-500 font-bold">{error}</div>}
 
-      <div className="grid grid-cols-4 gap-4 relative">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 relative">
         {Object.keys(groupedByTheme).map((theme, index) => (
-          <ThemeCard 
-            key={index} 
-            theme={theme} 
-            image={themeImages[theme]} 
-            onClick={() => openModal(theme)} 
+          <ThemeCard
+            key={index}
+            theme={theme}
+            image={themeImages[theme]}
+            onClick={() => openModal(theme)}
           />
         ))}
       </div>
@@ -214,27 +208,25 @@ function Reccom() {
             boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
             overflowY: "auto",
             marginTop: "80px",
-            color: "black", 
+            color: "black",
           },
         }}
       >
         <div className="flex justify-end items-center">
-          <button
-            onClick={closeModal}
-          >
+          <button onClick={closeModal}>
             <FaTimes size={20} />
           </button>
         </div>
 
-        <div className="flex items-center mt-2 mx-10">
+        <div className="flex flex-col lg:flex-row items-center mt-2 mx-4 lg:mx-10">
           <img
             src={themeImages[selectedTheme] || "/Image/default.jpg"}
             alt={selectedTheme}
-            className="w-50 h-40 object-cover mr-5 rounded-md"
+            className="w-full max-w-xs h-40 object-cover mb-4 lg:mb-0 lg:mr-5 rounded-md"
           />
-          <div className="text-lg">
+          <div className="text-lg text-center lg:text-left">
             <p><strong className="text-2xl">{selectedTheme}</strong></p>
-            <p><strong>ระยะเวลารวม:</strong> {formatDuration(totalDuration)}</p> 
+            <p><strong>ระยะเวลารวม:</strong> {formatDuration(totalDuration)}</p>
             <p><strong>แนวเพลง:</strong> {randomSongs.length > 0 ? randomSongs[0].genre.join(", ") : "ไม่มีข้อมูล"}</p>
             <p><strong>จำนวนเพลง:</strong> {randomSongs.length}</p>
           </div>
