@@ -10,7 +10,7 @@ function Selector() {
 
   const themes = ["Select","Wedding","Night party","Birthday party","Buddhist","Christian","Funeral","Luxury","Graduation party","Christmas party","Chinese New Year","Halloween party"];
   const genres = ["Select","Pop", "Jazz", "EDM", "Lo-Fi", "Classical", "Rock","Romantic", "Retro", "Hip-Hop", "ลูกทุ่ง", "ลูกกรุง", "เพื่อชีวิต", "Indie","Country", "Alternative", "Rap", "R&B", "Chanson", "Opera", "Tango","Bolero", "Swing", "Bossa Nova", "Soul", "Worship", "Hymn", "Carol","Disco", "Traditional", "Soundtrack", "Metal"];
-  const moods = ["Select","Fun", "Romantic", "Relax", "Uplifting", "Sad","Dance", "Celebratory", "Elegant", "Nostalgic", "Spooky", "Worshipful"];
+  //const moods = ["Select","Fun", "Romantic", "Relax", "Uplifting", "Sad","Dance", "Celebratory", "Elegant", "Nostalgic", "Spooky", "Worshipful"];
   const languages = ["Select","English", "Thai", "Spanish", "French", "German", "Japanese", "Chinese", "Korean", "Instrumental", "ETC."];
 
 
@@ -21,7 +21,7 @@ const [filters, setFilters] = useState({
   language: "",
   themes: [],
   genres: [],
-  mood: [],
+  //mood: [],
   minDuration: "",
 });
 
@@ -56,9 +56,9 @@ const [filters, setFilters] = useState({
               theme: song["ธีมงาน"] 
                 ? song["ธีมงาน"].split(",").map(t => t.trim()).filter(t => t !== "") 
                 : [],
-                mood: song["Mood"] && song["Mood"] !== "-" 
-                ? song["Mood"].split(",").map(m => m.trim()).filter(m => m !== "") 
-                : [],
+                // mood: song["Mood"] && song["Mood"] !== "-" 
+                // ? song["Mood"].split(",").map(m => m.trim()).filter(m => m !== "") 
+                // : [],
               language: song["ภาษา"] || "Unknown",
             }));
             setData(modifiedSongs);
@@ -148,7 +148,7 @@ const filteredData = data.filter((song) => {
       (filters.language === "" || song.language === filters.language) &&
       (filters.themes.length === 0 || filters.themes.every((theme) => song.theme.includes(theme))) &&
       (filters.genres.length === 0 || filters.genres.every((genre) => song.genre.includes(genre))) &&
-      (filters.mood.length === 0 || filters.mood.every((mood) => song.mood.includes(mood))) &&
+      //(filters.mood.length === 0 || filters.mood.every((mood) => song.mood.includes(mood))) &&
       (filters.minDuration === "" || song.duration >= parseInt(filters.minDuration))
   );
 });
@@ -230,14 +230,16 @@ const filteredData = data.filter((song) => {
           <img
             src={CDImage}
             alt="CD Image"
-            className="w-full h-auto object-cover rounded-lg"
+            className="w-full h-auto object-cover rounded-lg "
           />
         </div>
 
-        <div className="w-1/2 pl-20">
+        <div className="w-1/2 pl-20 mt-5">
           <div className="grid grid-cols-2 gap-6 mt-4">
+
+
             {/* Theme */}
-            
+          
               <div className="relative">
                 <label className="block mb-2 text-black font-semibold text-2xl">Theme</label>
                 <select className="w-full p-4 border rounded-md text-black text-lg" value={filters.themes[0] || ""} 
@@ -264,7 +266,7 @@ const filteredData = data.filter((song) => {
             
 
             {/* Mood */}
-              <div className="relative">
+            {/*  <div className="relative">
                 <label className="block mb-2 text-black font-semibold text-2xl">Mood</label>
                 <select 
                   className="w-full p-4 border rounded-md text-black text-lg" 
@@ -274,11 +276,11 @@ const filteredData = data.filter((song) => {
                     <option key={index} value={mood}>{mood}</option>
                   ))}
                 </select>
-              </div>
+              </div>*/}
 
 
             {/* Language */}
-            <div className="relative">
+            <div className="relative col-span-2">
               <label className="block mb-2 text-black font-semibold text-2xl">Language</label>
               <select className="w-full p-4 border rounded-md text-black text-lg" value={filters.language} onChange={(e) => setFilters({ ...filters, language: e.target.value })}>
                 {languages.map((lang, index) => (

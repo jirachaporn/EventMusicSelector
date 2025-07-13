@@ -16,8 +16,6 @@ const Navbar = () => {
         <NavItem onClick={() => navigate("/playlist")} icon={<FaMusic />} label="Playlist" />
         <NavItem onClick={() => navigate("/Favorite")} icon={<FaHeart />} label="Favorite" />
       </div>
-
-      <FaUserCircle className="text-3xl" />
     </nav>
   );
 };

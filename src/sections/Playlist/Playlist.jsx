@@ -155,15 +155,7 @@ function Playlist() {
                       {Math.floor(song.duration / 60)}:{(song.duration % 60).toString().padStart(2, '0')}
                     </p>
                     {/* เปลี่ยนปุ่ม Play เป็นจุด 3 จุด */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation(); // หยุดการ bubbling ของ event
-                        console.log("จุด 3 จุดถูกคลิก");
-                      }}
-                      className="text-gray-500 hover:text-gray-700"
-                    >
-                      •••
-                    </button>
+                    
                   </div>
                 </li>
               ))}
